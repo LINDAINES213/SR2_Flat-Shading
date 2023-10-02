@@ -1,4 +1,4 @@
-#SR2 - Flat Shading
+# SR2 - Flat Shading
 Para este laboratorio realizamos ilustraciones de modelos 3D a través de una ventana SDL utilizando las librerias GLM y SDL2 como el SR1 variando que esta vez ahora los polígonos se rellenaron.
 <br><br>
 Acá se pueden ver los cambios con la nave ya rellenados de un color, en este caso con tono rosado:<br><br>
