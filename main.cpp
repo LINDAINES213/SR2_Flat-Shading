@@ -211,35 +211,37 @@ void render(const std::vector<Vertex>& vertexArray,  const Uniform& uniform) {
                         // Calculate the interpolated Z value using barycentric coordinates
                         float interpolatedZ = barycentricCoord.x * A.z + barycentricCoord.y * B.z + barycentricCoord.z * C.z;
 
+                        glm::vec3 normal = a.normal * barycentricCoord.x + b.normal * barycentricCoord.y+ c.normal * barycentricCoord.z;
+
                         // Calculate the position 'P' of the fragment
                         glm::vec3 P = glm::vec3(x, y, depth);
                         glm::vec3 lightDirection = glm::normalize(L - P);
 
-                        glm::vec3 normal = a.normal * barycentricCoord.x + b.normal * barycentricCoord.y+ c.normal * barycentricCoord.z;
+                        // Calculate the intensity of the light using Lambertian attenuation
+                        float shadowIntensity = glm::dot(normal, lightDirection);
+
+
+
 
                         // Create a fragment with the position, interpolated attributes, and depth
                         Fragment fragment;
+                        Color finalColor = interpolatedColor * shadowIntensity;
                         fragment.position = glm::ivec2(x, y);
-
+                        fragment.color = finalColor;
                         fragment.z = depth;
 
-                        // Obtén la dirección de la luz en el espacio de vista
-                        glm::vec3 lightDirectionViewSpace = glm::normalize(glm::vec3(uniform.view * glm::vec4(L, 1.0f)));
-                        float intensity = glm::dot(normal, lightDirectionViewSpace);
-
-
-                        if (intensity <= 0) {
-                            // Aplicar sombreado plano aquí (e.g., establecer fragment.color a un color oscuro)
-                            fragment.color = Color{0, 0, 0}; // Color negro para la sombra
+                        // Apply the threshold for shadow intensity
+                        float shadowThreshold = -0.5f; // Ajusta este valor según tus necesidades
+                        if (shadowIntensity < shadowThreshold) {
+                            // Aplica una sombra más intensa (puedes usar un color oscuro, por ejemplo)
+                            fragment.color = Color{0, 0, 0, 255}; // Color negro
                         } else {
-                            // Resto del sombreado normal aquí (usar interpolatedColor y multiplicar por la intensidad)
-                            Color finalColor = interpolatedColor * intensity;
-                            fragment.color = finalColor;
+                            // Aplica una sombra más suave (usa el color normal)
+                            fragment.color = finalColor; // Utiliza el color calculado anteriormente
                         }
 
-                        // Apply fragment shader to calculate final color with shading
-                        Color finalColor = interpolatedColor * intensity;
-                        fragment.color = finalColor;
+                        // Calculate the intensity of the light
+                        float intensity = glm::dot(normal, glm::normalize(L - glm::vec3(x, y, interpolatedZ)));
 
                         // Apply the intensity to the fragment color
                         fragment.intensity = intensity;
